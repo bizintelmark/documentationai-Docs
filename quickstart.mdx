@@ -1,0 +1,179 @@
+---
+title: Quickstart Guide
+description: Get started with Biz Intel Marketing by requesting access, setting up your account, and making your first tracking query. Follow these steps to explore the dashboard and perform initial operations in under 5 minutes.
+---
+
+## Prerequisites
+
+<Callout kind="info">
+Before starting, ensure you have:
+- A valid email address for account registration
+- Access to `https://dashboard.example.com`
+- An API client ready for testing (e.g., cURL, Postman, or your preferred HTTP client)
+- Basic familiarity with JSON responses
+</Callout>
+
+## Step 1: Request Access and Set Up Your Account
+
+Begin by requesting access to Biz Intel Marketing. Visit the access portal and complete the signup form.
+
+<Steps>
+  <Step title="Request Access" icon="external-link">
+    Navigate to `https://drokaos.com/tracking` (or your Biz Intel Marketing access link) and submit your details.
+
+    After approval (typically within minutes), check your email for the welcome message containing your initial credentials.
+  </Step>
+
+  <Step title="Verify Email and Set Password" icon="mail">
+    Click the verification link in your email.
+
+    ```
+    From: noreply@bizintelmarketing.com
+    Subject: Verify Your Biz Intel Marketing Account
+    ```
+
+    Set a strong password when prompted.
+  </Step>
+</Steps>
+
+## Step 2: Log In to the Dashboard
+
+Access your operational dashboard to monitor trackings and shipments.
+
+<Tabs>
+  <Tab title="Browser" icon="globe">
+    1. Go to `https://dashboard.example.com/login`
+    2. Enter your email and password
+    3. Click **Sign In**
+
+    You land on the main dashboard showing real-time status.
+  </Tab>
+
+  <Tab title="CLI Access" icon="terminal">
+    ```bash
+    curl -X POST https://auth.example.com/login \
+      -H "Content-Type: application/json" \
+      -d '{"email": "user@example.com", "password": "your-password"}'
+    ```
+  </Tab>
+</Tabs>
+
+## Step 3: Create Your First Tracking ID
+
+Generate a unique tracking ID for a shipment or marketing campaign event.
+
+<Steps>
+  <Step title="Create Tracking" icon="plus">
+    In the dashboard, click **New Tracking**.
+
+    Fill in details like origin, destination, and status.
+
+    Example payload:
+    
+````json
+{
+  "trackingId": "DK-A93F21",
+  "status": "In Transit",
+  "location": "Miami Hub",
+  "mode": "Global Movement"
+}
+````
+  </Step>
+
+  <Step title="Save and View" icon="save">
+    Save the tracking. Note the generated ID for the next step.
+  </Step>
+</Steps>
+
+## Step 4: Perform a Basic Shipment Search
+
+Query your tracking status using the API or dashboard search.
+
+<Request tabs="cURL,JavaScript,Python" show-lines="true">
+````bash
+curl -X GET "https://api.example.com/v1/tracking/DK-A93F21" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+````
+
+````javascript
+const response = await fetch('https://api.example.com/v1/tracking/DK-A93F21', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+const data = await response.json();
+console.log(data);
+````
+
+````python
+import requests
+
+response = requests.get(
+    'https://api.example.com/v1/tracking/DK-A93F21',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'}
+)
+print(response.json())
+````
+</Request>
+
+<Response tabs="200,404">
+````json
+{
+  "trackingId": "DK-A93F21",
+  "status": "In Transit",
+  "location": "Miami Hub",
+  "events": [
+    {
+      "timestamp": "2024-10-15T10:42:01Z",
+      "type": "GET",
+      "message": "Status updated"
+    }
+  ]
+}
+````
+
+````json
+{
+  "error": "Tracking not found",
+  "code": 404
+}
+````
+</Response>
+
+## Step 5: View Initial Status Updates
+
+Check the dashboard or API response for live updates.
+
+<Callout kind="success">
+Your first tracking is live! Events like warehouse updates and status changes appear in real-time.
+</Callout>
+
+<ParamField path="trackingId" param-type="string" required="true">
+Unique tracking identifier (e.g., `DK-A93F21`).
+</ParamField>
+
+<ParamField header="Authorization" param-type="string" required="true">
+Bearer token: `Bearer YOUR_API_KEY`.
+</ParamField>
+
+## Next Steps
+
+<Columns cols={3}>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Secure your API calls with full auth setup.
+  </Card>
+
+  <Card title="Dashboard Guide" icon="monitor" href="/introduction#dashboard">
+    Deep dive into dashboard features.
+  </Card>
+
+  <Card title="Advanced Tracking" icon="zap" href="#">
+    Explore real-time events and audits.
+  </Card>
+</Columns>
+
+<Expandable title="Troubleshooting Common Issues" default-open="false">
+- **401 Unauthorized**: Verify your `{API_KEY}` is correct.
+- **404 Not Found**: Confirm the `trackingId` exists.
+- Dashboard not loading? Clear browser cache and retry login.
+</Expandable>

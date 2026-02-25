@@ -1,0 +1,168 @@
+---
+title: Changelog
+description: Track the latest updates, improvements, and fixes in Biz Intel Marketing. This page lists version history with details on new features and changes.
+---
+
+## Recent Releases
+
+Stay informed about the latest enhancements to Biz Intel Marketing. Review release notes below to understand new capabilities, fixes, and any required actions.
+
+<Update label="2024-10-15" description="v1.2.0" tags={["feature", "improvement"]}>
+
+## New Features
+
+- Added real-time campaign performance dashboards with live metrics for impressions, clicks, and conversions.
+- Introduced A/B testing integration for automated variant analysis.
+
+## Improvements
+
+- Enhanced data export options to include CSV, PDF, and direct Google Sheets integration.
+- Optimized query performance for reports handling `>1M` rows.
+
+## Bug Fixes
+
+- Fixed intermittent failures in webhook delivery for marketing event notifications.
+- Resolved UI rendering issues on high-DPI displays.
+
+</Update>
+
+<Update label="2024-09-20" description="v1.1.0" tags={["feature", "bugfix"]}>
+
+## New Features
+
+- Launched audience segmentation builder with SQL-like query interface.
+- Added Slack and Microsoft Teams notifications for campaign alerts.
+
+## Bug Fixes
+
+- Corrected date range filtering in analytics reports.
+- Patched authentication token refresh logic to prevent session timeouts.
+
+## Improvements
+
+- Upgraded chart library for better mobile responsiveness.
+
+</Update>
+
+<Update label="2024-08-10" description="v1.0.0" tags={["breaking", "feature"]}>
+
+## Initial Release
+
+- Core marketing intelligence platform with API access to campaign data.
+- Real-time tracking endpoints for events and metrics.
+- Basic dashboard with KPI visualizations.
+
+## Breaking Changes
+
+- Updated API version to `v1`. Migrate from beta endpoints.
+
+</Update>
+
+## Upgrading Your Instance
+
+Follow these steps to upgrade Biz Intel Marketing safely.
+
+<Steps>
+  <Step title="Backup Data" icon="database">
+
+    Export your current data using the dashboard export feature.
+
+    ```
+    curl -X POST https://api.example.com/v1/export \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -d '{"campaigns": true, "analytics": true}'
+    ```
+
+  </Step>
+  <Step title="Update SDK" icon="package">
+
+    <Tabs>
+      <Tab title="npm" icon="nodejs">
+````bash
+npm install @bizintel/marketing@latest
+````
+      </Tab>
+      <Tab title="Python" icon="python">
+````bash
+pip install bizintel-marketing==1.2.0
+````
+      </Tab>
+    </Tabs>
+
+  </Step>
+  <Step title="Run Migrations" icon="settings">
+
+    Execute database migrations if using self-hosted deployment.
+
+    ```
+    bizintel migrate --env production
+    ```
+
+  </Step>
+  <Step title="Verify" icon="check-circle">
+
+    Test key endpoints and dashboards.
+
+  </Step>
+</Steps>
+
+<Callout kind="tip">
+Subscribe to our RSS feed or GitHub releases for instant notifications on new versions.
+</Callout>
+
+## Upcoming Roadmap
+
+Discover what's coming next to Biz Intel Marketing.
+
+<Columns cols={3}>
+  <Card title="AI Insights" icon="zap" href="#ai-roadmap">
+    Automated anomaly detection and predictive analytics.
+  </Card>
+  <Card title="Multi-Channel" icon="share-2" href="#multi-channel">
+    Unified tracking across email, social, and ads.
+  </Card>
+  <Card title="Enterprise SSO" icon="shield" href="#enterprise">
+    SAML and OAuth support for teams.
+  </Card>
+</Columns>
+
+<Expandable title="Detailed Roadmap" default-open="false">
+
+| Feature | Target Release | Status |
+|---------|----------------|--------|
+| AI Campaign Optimizer | Q4 2024 | Planned |
+| Custom Metrics API | Q1 2025 | In Development |
+| GDPR Compliance Tools | Q2 2025 | Research |
+
+</Expandable>
+
+## Migration Notes for Breaking Changes
+
+For v1.0.0 users, update your API calls:
+
+<CodeGroup tabs="JavaScript,Python">
+  ```javascript
+  // Old (beta)
+  const data = await fetch('https://api.example.com/beta/campaigns');
+
+  // New (v1)
+  const data = await fetch('https://api.example.com/v1/campaigns', {
+    headers: { Authorization: `Bearer ${YOUR_API_KEY}` }
+  });
+  ```
+  ```python
+  import requests
+
+  # Old (beta)
+  response = requests.get('https://api.example.com/beta/campaigns')
+
+  # New (v1)
+  response = requests.get('https://api.example.com/v1/campaigns', headers={
+      'Authorization': f'Bearer {YOUR_API_KEY}'
+  })
+  ```
+</CodeGroup>
+
+<Callout kind="alert">
+Always test upgrades in staging before production deployment.
+</Callout>
