@@ -1,101 +1,198 @@
 ---
-title: Introduction to Biz Intel Marketing
-description: Discover Biz Intel Marketing, a real-time operating system for global logistics providing traceability, audit, and operational control. Learn about its key features and how it unifies shipment tracking and data across systems.
+title: Introduction to Droka OS Logistics invoice demo
+description: Explore Droka OS Logistics as implemented in the BIM-CARGO repo: a cargo invoicing demo for managing customers, tracking-based invoices, role-based access, and activity history.
 ---
-
-<Callout kind="info" title="Starter Kit Template">
-  This documentation was generated as a starter kit template based on your brand. Please review and customize the content to accurately reflect your product's features, APIs, and capabilities.
-</Callout>
 
 ## Overview
 
-Biz Intel Marketing provides real-time infrastructure for traceability, audit, and operational control in global logistics. It treats each tracking ID as a unique operational identity, connecting shipments, events, and statuses into a single auditable flow.
+Droka OS Logistics (BIM-CARGO) is a web-based invoice management demo for cargo and warehouse operations. It focuses on managing customers, building invoices from tracked cargo items and weights, and enforcing role-based access for different warehouse staff responsibilities.
 
-You gain complete visibility across warehouses, customs, billing, and delivery without fragmented records or manual reconciliation. Eliminate assumptions and achieve operational truth with automated verification of every state change.
+The current implementation runs as a single-page React app with an in-memory data model for customers, invoices, and staff. You use the main home screen to switch staff roles, create and view invoices, manage customer records, and inspect activity history for recent operations.
 
-## Key Features
+<Callout kind="info">
+  The repo runs as a demo/prototype: all state lives in local in-memory React state and resets on page reload. There is no authentication; you select roles from a Staff dropdown in the header to simulate RBAC.
+</Callout>
+
+## Key features
 
 <Columns cols={3}>
-  <Card title="Real-time Traceability" icon="zap" href="#core-capabilities">
-    Track millions of shipments instantly across multiple systems and locations.
+  <Card title="Customer management" icon="users" href="#core-concepts">
+    Capture cargo customers with account numbers, pricing tiers, and VIP overrides for billing.
   </Card>
-  <Card title="Automated Audit Trail" icon="shield" href="#core-capabilities">
-    Capture every transition and detect inconsistencies in real time.
+  <Card title="Invoice creation" icon="file-text" href="#core-concepts">
+    Build invoices from tracking items, weights, and tiered pricing, with auto-generated numbers and statuses.
   </Card>
-  <Card title="Unified Operational Truth" icon="database" href="#benefits">
-    One persistent history per tracking ID, eliminating data silos.
+  <Card title="Role-based UI access" icon="shield" href="#staff-roles-and-rbac">
+    Switch between admin, manager, and warehouse roles to see UI-level access control in action.
   </Card>
 </Columns>
 
-## Core Capabilities
+<Columns cols={3}>
+  <Card title="Tracking-based items" icon="search" href="#tracking-items">
+    Add items to invoices with dimensions and weight derived from tracking details.
+  </Card>
+  <Card title="Activity history" icon="clock" href="#activity-history">
+    Review a history of recent actions such as customer updates and invoice events.
+  </Card>
+  <Card title="Repo-first architecture" icon="code" href="#how-it-works-in-the-repo">
+    Explore a React + TypeScript frontend with Express + Drizzle scaffolding ready for a real backend.
+  </Card>
+</Columns>
 
-### Real-time Traceability
-Monitor shipment status updates as they happen. Query any tracking ID to retrieve current location, status, and full history.
+## Core concepts
 
-<CodeGroup tabs="JavaScript,cURL">
-  ```javascript
-  const response = await fetch('https://api.example.com/v1/tracking/DK-A93F21', {
-    headers: { Authorization: `Bearer ${YOUR_API_KEY}` }
-  });
-  const data = await response.json();
-  console.log(data.status); // "In Transit"
-  ```
-  ```bash
-  curl -H "Authorization: Bearer YOUR_API_KEY" \
-       https://api.example.com/v1/tracking/DK-A93F21
-  ```
-</CodeGroup>
+### Customers
 
-### Audit and Verification
-Every change is logged with timestamps and actors. Verify who updated what and when.
+Customers represent cargo clients with an account and pricing configuration used when calculating invoice totals.
 
-```mermaid
-sequenceDiagram
-    Client->>API: GET /v1/tracking/ID
-    API->>Database: Query latest events
-    Database->>API: Return audit trail
-    API->>Client: Full history
+Typical fields in the UI include:
+
+- **Account number** – a unique identifier for the customer.
+- **Name and contact details** – who the cargo belongs to and how to reach them.
+- **Pricing type** – standard vs. VIP-tier pricing, which controls how weights are billed.
+- **Custom price** – an optional per-kilogram override for VIP customers.
+
+The customer form and listing are implemented in:
+
+- `client/src/components/CustomerForm.tsx`
+- `client/src/components/CustomerList.tsx`
+- `client/src/components/CustomerLookup.tsx`
+
+The pricing type drives how invoices compute totals. For VIP customers, the UI prefers a customer-specific `customPrice` over the general price.
+
+```ts
+const pricePerKg =
+  selectedCustomer?.pricingType === "vip"
+    ? selectedCustomer.customPrice || generalPrice
+    : generalPrice;
 ```
 
-## Benefits for Logistics Operations
+### Invoices
 
-Unify tracking, billing, and delivery data to prevent failures from system disagreements. Process over `$10M+` annually with `2.5M+` trackings and `3M+` searches per year.
+Invoices combine one customer, tracking-based items, and a pricing model into a billable document. The UI assigns each invoice a compact, human-readable invoice number and tracks its lifecycle with statuses.
 
-<Callout kind="tip">
-  Start with a test tracking ID like `DK-A93F21` to explore the dashboard at `https://dashboard.example.com`.
-</Callout>
+The invoice orchestration and views live in:
 
-## Quick Start
+- `client/src/components/InvoiceForm.tsx`
+- `client/src/components/InvoiceListView.tsx`
+- `client/src/components/InvoicePreview.tsx`
+
+#### Invoice number format
+
+Invoice numbers follow a predictable pattern composed of a prefix, the current year, and a zero-padded sequence:
+
+```ts
+const invoiceNumber = `INV-${new Date().getFullYear()}-${String(
+  invoices.length + 1
+).padStart(3, "0")}`;
+// Example: "INV-2024-003"
+```
+
+In the current demo, the sequence is derived from the length of the in-memory invoice array, so numbers reset when the page reloads.
+
+#### Invoice status
+
+Each invoice carries a status flag of `unpaid`, `paid`, or `cancelled` that controls how it appears in the list and preview components. Status changes are reflected in the activity history so you can see when an invoice was created or updated and by which staff member (based on the active role in the header).
+
+### Tracking items
+
+Tracking items model the cargo you bill for on an invoice. Each item typically includes:
+
+- **Tracking reference** – the shipment or tracking ID.
+- **Dimensions** – length, width, and height fields.
+- **Weight** – the billable weight for pricing calculations.
+
+The invoice total is calculated as the sum of each item's weight multiplied by the derived `pricePerKg`:
+
+```ts
+const total = items.reduce((sum, item) => {
+  const weight = parseFloat(item.weight) || 0;
+  return sum + weight * pricePerKg;
+}, 0);
+```
+
+Because all data lives in local state, updating items immediately recomputes the total in the UI.
+
+### Staff roles and RBAC
+
+The home screen includes a Staff selector in the header that lets you switch between predefined staff identities and roles. Role-based access control is implemented purely in the UI: different roles enable or disable specific actions or panels.
+
+Roles are defined as a string union type in `client/src/pages/home.tsx`:
+
+```ts
+export type StaffRole = "admin" | "manager" | "warehouse";
+```
+
+The demo seeds a small staff list:
+
+```ts
+const [staff] = useState<Staff[]>([
+  { id: "1", name: "Jennifer", role: "admin" },
+  { id: "2", name: "Carlos", role: "manager" },
+  { id: "3", name: "Miguel", role: "warehouse" },
+]);
+```
+
+You switch between staff via a dropdown, and the UI updates available actions based on the selected role rather than on any server-side authentication.
+
+## Activity history
+
+Activity history provides a lightweight audit trail of changes within the current browser session. Each time you create or update a customer or invoice, the app records a structured entry showing:
+
+- What operation occurred (for example, invoice created, customer updated).
+- Which entity it affected.
+- Which staff member performed the action (based on the active role).
+- When it happened (timestamp within the current session).
+
+The history view is implemented in `client/src/components/RecordHistory.tsx` and is reset when the page reloads, consistent with the in-memory-only data model.
+
+## How it works in the repo
+
+The BIM-CARGO repo is organized as a React + TypeScript frontend with backend scaffolding for an eventual API layer.
+
+- `client/src/pages/home.tsx` orchestrates the main screen, holds the in-memory demo state (customers, invoices, staff), and wires together all major components.
+- UI modules:
+  - `CustomerForm.tsx`, `CustomerList.tsx`, `CustomerLookup.tsx` handle customer CRUD and selection.
+  - `InvoiceForm.tsx` manages invoice composition, including items and totals.
+  - `InvoiceListView.tsx` shows existing invoices with filtering and status views.
+  - `InvoicePreview.tsx` renders a printable-style invoice view.
+  - `RecordHistory.tsx` renders the in-session activity log.
+- Backend scaffolding:
+  - `server/` contains an Express + Drizzle setup ready to back the UI with real persistence and APIs.
+  - `shared/` holds schema and type definitions that can be shared between client and server.
+
+In the current state, the UI uses only local React state and does not call the Express server. Turning the demo into a production app primarily involves wiring the home page and forms to real endpoints backed by the `server/` and `shared/` modules.
+
+## What you can do in the UI
 
 <Steps>
-  <Step title="Sign Up" icon="user-plus">
-    Create your account at `https://dashboard.example.com/register`.
+  <Step title="Switch staff roles" icon="users">
+    Use the Staff dropdown in the header to choose between Admin, Manager, and Warehouse roles. The app updates visible actions based on the active role, without any login screen.
   </Step>
-  <Step title="Get API Key" icon="key">
-    Navigate to Settings > API Keys and generate `YOUR_API_KEY`.
+  <Step title="Create and manage customers" icon="folder">
+    Open the customer panel to add new cargo customers with account numbers, pricing types, and optional VIP pricing. Edit existing records and see these changes reflected when you build invoices.
   </Step>
-  <Step title="Track First Shipment" icon="search">
-    Use the example code above to query a tracking ID.
+  <Step title="Build invoices from tracking items" icon="file-text">
+    Use the invoice form to select a customer, add tracking-based items with dimensions and weight, and review the calculated total. Preview invoices and browse them in the invoice list view.
+  </Step>
+  <Step title="Review activity history" icon="clock">
+    Check the activity history panel to see a chronological list of customer and invoice events for the current session, tagged with the staff member who performed each action.
   </Step>
 </Steps>
 
-## Next Steps
+## Next steps
 
 <Columns cols={2}>
-  <Card title="Quickstart Guide" icon="book-open" href="/quickstart">
-    Set up your first integration in minutes.
+  <Card title="Quickstart" icon="zap" href="/quickstart">
+    Run the BIM-CARGO repo locally, explore the home screen, and experiment with customers, invoices, and roles.
+  </Card>
+  <Card title="Core concepts" icon="book-open" href="/concepts">
+    Deepen your understanding of customers, pricing models, and invoice flows in Droka OS Logistics.
   </Card>
   <Card title="Authentication" icon="lock" href="/authentication">
-    Secure your API access properly.
+    Plan how real authentication and authorization would plug into the existing role-based UI.
   </Card>
-  <Card title="API Reference" icon="code" href="/api-reference">
-    Full endpoint documentation.
-  </Card>
-  <Card title="Changelog" icon="git-branch" href="/changelog">
-    Stay updated with latest releases.
+  <Card title="Release history" icon="clock" href="/changelog">
+    Track how the Droka OS Logistics invoice demo evolves over time.
   </Card>
 </Columns>
-
-<Callout kind="success">
-  Ready to dive deeper? Check the <a href="/quickstart">Quickstart</a> for hands-on setup.
-</Callout>

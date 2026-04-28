@@ -1,179 +1,238 @@
 ---
-title: Quickstart Guide
-description: Get started with Biz Intel Marketing by requesting access, setting up your account, and making your first tracking query. Follow these steps to explore the dashboard and perform initial operations in under 5 minutes.
+title: Quickstart with Droka OS Logistics
+description: Run Droka OS Logistics locally, switch staff roles, and practice the core customer and invoice workflows using the demo UI and in-memory data.
 ---
 
 ## Prerequisites
 
 <Callout kind="info">
-Before starting, ensure you have:
-- A valid email address for account registration
-- Access to `https://dashboard.example.com`
-- An API client ready for testing (e.g., cURL, Postman, or your preferred HTTP client)
-- Basic familiarity with JSON responses
+Install and verify:
+
+- Node.js (LTS recommended)
+- npm (bundled with most Node.js installs)
+- A modern browser (Chrome, Edge, or Firefox)
+
+This demo uses in-memory data. When you restart the dev server or refresh hard during certain flows, the seeded state may reset.
 </Callout>
 
-## Step 1: Request Access and Set Up Your Account
+## Run Droka OS Logistics locally
 
-Begin by requesting access to Biz Intel Marketing. Visit the access portal and complete the signup form.
-
-<Steps>
-  <Step title="Request Access" icon="external-link">
-    Navigate to `https://drokaos.com/tracking` (or your Biz Intel Marketing access link) and submit your details.
-
-    After approval (typically within minutes), check your email for the welcome message containing your initial credentials.
-  </Step>
-
-  <Step title="Verify Email and Set Password" icon="mail">
-    Click the verification link in your email.
-
-    ```
-    From: noreply@bizintelmarketing.com
-    Subject: Verify Your Biz Intel Marketing Account
-    ```
-
-    Set a strong password when prompted.
-  </Step>
-</Steps>
-
-## Step 2: Log In to the Dashboard
-
-Access your operational dashboard to monitor trackings and shipments.
-
-<Tabs>
-  <Tab title="Browser" icon="globe">
-    1. Go to `https://dashboard.example.com/login`
-    2. Enter your email and password
-    3. Click **Sign In**
-
-    You land on the main dashboard showing real-time status.
-  </Tab>
-
-  <Tab title="CLI Access" icon="terminal">
-    ```bash
-    curl -X POST https://auth.example.com/login \
-      -H "Content-Type: application/json" \
-      -d '{"email": "user@example.com", "password": "your-password"}'
-    ```
-  </Tab>
-</Tabs>
-
-## Step 3: Create Your First Tracking ID
-
-Generate a unique tracking ID for a shipment or marketing campaign event.
+Start the backend server and client so you can use the customers and invoices UI.
 
 <Steps>
-  <Step title="Create Tracking" icon="plus">
-    In the dashboard, click **New Tracking**.
-
-    Fill in details like origin, destination, and status.
-
-    Example payload:
+  <Step title="Install dependencies" icon="download">
     
-````json
-{
-  "trackingId": "DK-A93F21",
-  "status": "In Transit",
-  "location": "Miami Hub",
-  "mode": "Global Movement"
-}
-````
+```bash
+npm install
+```
+
+Your terminal finishes with all packages installed and no fatal errors.
   </Step>
 
-  <Step title="Save and View" icon="save">
-    Save the tracking. Note the generated ID for the next step.
+  <Step title="Run in development mode" icon="play-circle">
+    
+```bash
+npm run dev
+```
+
+The `dev` script starts the server with development settings:
+
+```ts
+// package.json → scripts (excerpt)
+"dev": "NODE_ENV=development tsx server/index-dev.ts"
+```
+
+The server logs a line similar to:
+
+```text
+serving on port 5000
+```
+
+Then open your browser to:
+
+```text
+http://localhost:5000
+```
+
+If you set a `PORT` environment variable, the app listens on that port instead of `5000`.
+  </Step>
+
+  <Step title="Build and run in production mode (optional)" icon="package">
+Use this only when you want to test the built assets.
+
+```bash
+# Build client and server bundle
+npm run build
+
+# Start production server
+npm run start
+```
+
+Relevant scripts:
+
+```json
+"build": "vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js",
+"start": "NODE_ENV=production node dist/index.js"
+```
+
+The production server uses the same port logic as development:
+
+```ts
+const port = parseInt(process.env.PORT || "5000", 10);
+server.listen({
+  port,
+  host: "0.0.0.0",
+  reusePort: true,
+}, () => {
+  log(`serving on port ${port}`);
+});
+```
   </Step>
 </Steps>
 
-## Step 4: Perform a Basic Shipment Search
-
-Query your tracking status using the API or dashboard search.
-
-<Request tabs="cURL,JavaScript,Python" show-lines="true">
-````bash
-curl -X GET "https://api.example.com/v1/tracking/DK-A93F21" \
-  -H "Authorization: Bearer YOUR_API_KEY"
-````
-
-````javascript
-const response = await fetch('https://api.example.com/v1/tracking/DK-A93F21', {
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  }
-});
-const data = await response.json();
-console.log(data);
-````
-
-````python
-import requests
-
-response = requests.get(
-    'https://api.example.com/v1/tracking/DK-A93F21',
-    headers={'Authorization': 'Bearer YOUR_API_KEY'}
-)
-print(response.json())
-````
-</Request>
-
-<Response tabs="200,404">
-````json
-{
-  "trackingId": "DK-A93F21",
-  "status": "In Transit",
-  "location": "Miami Hub",
-  "events": [
-    {
-      "timestamp": "2024-10-15T10:42:01Z",
-      "type": "GET",
-      "message": "Status updated"
-    }
-  ]
-}
-````
-
-````json
-{
-  "error": "Tracking not found",
-  "code": 404
-}
-````
-</Response>
-
-## Step 5: View Initial Status Updates
-
-Check the dashboard or API response for live updates.
-
-<Callout kind="success">
-Your first tracking is live! Events like warehouse updates and status changes appear in real-time.
+<Callout kind="info">
+If `PORT` is not set, Droka OS Logistics listens on `http://localhost:5000`. If that port is busy or you prefer a custom port, export `PORT=3000` (or another value) before running `npm run dev`.
 </Callout>
 
-<ParamField path="trackingId" param-type="string" required="true">
-Unique tracking identifier (e.g., `DK-A93F21`).
-</ParamField>
+## Understand roles and access
 
-<ParamField header="Authorization" param-type="string" required="true">
-Bearer token: `Bearer YOUR_API_KEY`.
-</ParamField>
+Droka OS Logistics does not have authentication or login in this demo. Instead, the UI simulates role-based access control using a Staff dropdown.
 
-## Next Steps
+- Use the **Staff** selector (data-testid `select-current-staff`) in the header to switch between seeded staff identities.
+- Each identity has a role:
+  - **Admin**: full access (customers, invoices, activity).
+  - **Manager**: invoice operations, but limited customer management.
+  - **Warehouse**: operational view with restricted write actions.
+
+Actions appear or disappear based on the selected role. If you do not see a button or menu item mentioned in this guide, switch to an Admin or Manager identity.
+
+## Complete your first workflow
+
+Follow this path once to get a feel for the main customer and invoice flows.
+
+<Steps>
+  <Step title="Open the app and pick a staff role" icon="monitor">
+Open `http://localhost:5000` in your browser.
+
+Locate the **Staff** dropdown in the top bar and switch to an **Admin** identity. The label may include both the staff member name and role.
+
+Selecting Admin ensures you can create customers, create invoices, and review activity history in one session.
+  </Step>
+
+  <Step title="Create a customer (Admin only)" icon="users">
+Go to the **Customers** section from the main navigation.
+
+- Click **New Customer**.
+- Enter basic details such as the customer name and contact information.
+- Choose a **pricing type** for the customer (for example, a per-kilogram rate configuration used when calculating invoice totals).
+
+Save the customer. You should see the new customer listed, and it becomes available when creating invoices.
+  </Step>
+
+  <Step title="Create an invoice for that customer" icon="file-text">
+Switch to a role that can create invoices (**Admin** or **Manager**).
+
+Navigate to the **Invoices** section and click **New Invoice**:
+
+- Select the customer you created in the previous step.
+- Confirm or adjust the customer pricing type if the UI exposes it.
+- Add one or more tracking items:
+  - Provide tracking details (for example, route or consignment reference).
+  - Enter a **weight** value for each item.
+
+The invoice form calculates the total using code similar to:
+
+```ts
+const total = items.reduce((sum, item) => {
+  const weight = parseFloat(item.weight) || 0;
+  return sum + weight * pricePerKg;
+}, 0);
+```
+
+The total updates as you add or edit items. Save the invoice when you are satisfied with the line items.
+  </Step>
+
+  <Step title="Mark the invoice paid or cancelled and preview it" icon="check-circle">
+After saving, you land on the invoice details page or see the invoice listed in the Invoices table.
+
+From there:
+
+- Use the status controls to **mark the invoice as Paid or Cancelled**.
+- Open the **Preview** or **View** option to see the invoice as an output document.
+
+Invoice numbers follow a predictable format, for example:
+
+```ts
+const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoices.length + 1).padStart(3, "0")}`;
+```
+
+This pattern uses the current year and a zero-padded sequence number, which helps when scanning multiple invoices during testing.
+  </Step>
+
+  <Step title="Review activity history (Admin)" icon="bar-chart">
+Switch back to an **Admin** identity if needed.
+
+Open the **Activity** or **History** section (naming may vary slightly in the UI). You see a timeline of actions such as:
+
+- Customer created or updated
+- Invoice created
+- Invoice status changed to Paid or Cancelled
+
+Confirm that your recent customer and invoice actions appear in this history. This is useful for validating that role-based UI flows are wired correctly end to end.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<Callout kind="info">
+Most quickstart issues relate to ports, environment variables, or role selection in the Staff dropdown.
+</Callout>
+
+<ExpandableGroup>
+  <Expandable title="Page does not load on http://localhost:5000" default-open="false">
+
+- Make sure the dev server is running with `npm run dev`.
+- Check the terminal logs for `serving on port 5000` or another port.
+- If you see a different port in the log (for example, `serving on port 3000`), open that port in your browser instead.
+- If you want a specific port, set `PORT` before starting:
+
+```bash
+export PORT=3000
+npm run dev
+```
+
+  </Expandable>
+
+  <Expandable title="Actions are missing (cannot create customer or invoice)" default-open="false">
+
+- Verify which staff role is selected in the **Staff** dropdown.
+- Switch to an **Admin** identity when you need full access, including customer creation and activity history.
+- Use a **Manager** identity to focus on invoice operations with limited configuration powers.
+- The **Warehouse** role intentionally hides many write actions; use it only to test restricted views.
+
+  </Expandable>
+
+  <Expandable title="Data disappears after restart or reload" default-open="false">
+
+- The app uses demo and in-memory state for many flows.
+- If you stop and restart `npm run dev`, previously created customers and invoices may reset.
+- When testing a particular scenario, keep the server running and avoid full hard reloads unless you expect to re-seed data.
+
+  </Expandable>
+</ExpandableGroup>
+
+## Next steps
 
 <Columns cols={3}>
+  <Card title="Concepts" icon="book-open" href="/concepts">
+    Learn how customers, invoices, and roles fit together in Droka OS Logistics.
+  </Card>
+
   <Card title="Authentication" icon="lock" href="/authentication">
-    Secure your API calls with full auth setup.
+    Review authentication concepts for when you move beyond the demo UI.
   </Card>
 
-  <Card title="Dashboard Guide" icon="monitor" href="/introduction#dashboard">
-    Deep dive into dashboard features.
-  </Card>
-
-  <Card title="Advanced Tracking" icon="zap" href="#">
-    Explore real-time events and audits.
+  <Card title="Help Center" icon="help-circle" href="/help-center">
+    Find troubleshooting tips and answers to common setup questions.
   </Card>
 </Columns>
-
-<Expandable title="Troubleshooting Common Issues" default-open="false">
-- **401 Unauthorized**: Verify your `{API_KEY}` is correct.
-- **404 Not Found**: Confirm the `trackingId` exists.
-- Dashboard not loading? Clear browser cache and retry login.
-</Expandable>

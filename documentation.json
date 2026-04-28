@@ -19,6 +19,11 @@
             "icon": "rocket",
             "pages": [
               {
+                "title": "Empieza Aquí",
+                "path": "empieza-aqui",
+                "icon": "activity"
+              },
+              {
                 "title": "Introduction",
                 "path": "introduction",
                 "icon": "home"
@@ -101,6 +106,10 @@
             "expandable": false,
             "pages": [
               {
+                "title": "Configuración Inicial",
+                "path": "initial-setup"
+              },
+              {
                 "title": "Create New Project",
                 "path": "help-center/guides/create-new-project"
               }
@@ -116,6 +125,17 @@
             "title": "Release History",
             "path": "changelog",
             "icon": "history"
+          }
+        ]
+      },
+      {
+        "tab": "Settings",
+        "icon": "settings",
+        "pages": [
+          {
+            "title": "Print",
+            "path": "settings/print",
+            "icon": "printer"
           }
         ]
       }
