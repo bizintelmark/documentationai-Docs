@@ -84,7 +84,7 @@
             "expandable": false,
             "pages": [
               {
-                "title": "Getting Started FAQ",
+                "title": "Preguntas Frecuentes",
                 "path": "help-center/faq/getting-started"
               }
             ]
@@ -108,10 +108,6 @@
               {
                 "title": "Configuración Inicial",
                 "path": "initial-setup"
-              },
-              {
-                "title": "Create New Project",
-                "path": "help-center/guides/create-new-project"
               }
             ]
           }
